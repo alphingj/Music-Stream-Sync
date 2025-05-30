@@ -205,11 +205,8 @@ metadata:
 test_plan:
   current_focus:
     - "WebSocket signaling server for WebRTC"
-    - "Audio session management API"
-    - "Dual-mode UI (Host/Client selector)"
-    - "WebRTC P2P connection system"
-    - "Audio synchronization engine"
-  stuck_tasks: []
+  stuck_tasks:
+    - "WebSocket signaling server for WebRTC"
   test_all: false
   test_priority: "high_first"
 
