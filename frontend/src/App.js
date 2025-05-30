@@ -18,6 +18,20 @@ class AudioSyncEngine {
     this.clockOffset = 0; // For synchronization with host
     this.jitterBuffer = [];
     this.targetBufferSize = 5; // 5 chunks
+    
+    // Live audio streaming
+    this.mediaStream = null;
+    this.mediaRecorder = null;
+    this.isLiveBroadcasting = false;
+    this.audioChunks = [];
+    this.onAudioChunk = null; // Callback for audio chunks
+    this.scriptProcessor = null;
+    this.sourceAudioNode = null;
+    
+    // Client-side audio playback for live streams
+    this.audioQueue = [];
+    this.isPlaying = false;
+    this.nextPlayTime = 0;
   }
 
   async initialize() {
@@ -32,6 +46,127 @@ class AudioSyncEngine {
     }
   }
 
+  // Microphone access for host
+  async requestMicrophoneAccess() {
+    try {
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 44100
+        } 
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to access microphone:', error);
+      return false;
+    }
+  }
+
+  // Start live audio broadcasting (host)
+  async startLiveBroadcast(onAudioChunk) {
+    if (!this.mediaStream || !this.audioContext) return false;
+
+    try {
+      this.onAudioChunk = onAudioChunk;
+      this.isLiveBroadcasting = true;
+      
+      // Create audio source from microphone
+      this.sourceAudioNode = this.audioContext.createMediaStreamSource(this.mediaStream);
+      
+      // Create script processor for real-time audio processing
+      this.scriptProcessor = this.audioContext.createScriptProcessor(4096, 1, 1);
+      
+      this.scriptProcessor.onaudioprocess = (event) => {
+        if (!this.isLiveBroadcasting) return;
+        
+        const inputBuffer = event.inputBuffer;
+        const inputData = inputBuffer.getChannelData(0);
+        
+        // Convert to ArrayBuffer for transmission
+        const audioData = new Float32Array(inputData);
+        const timestamp = performance.now();
+        
+        if (this.onAudioChunk) {
+          this.onAudioChunk({
+            audioData: Array.from(audioData),
+            timestamp: timestamp,
+            sampleRate: this.audioContext.sampleRate
+          });
+        }
+      };
+      
+      // Connect the audio processing chain
+      this.sourceAudioNode.connect(this.scriptProcessor);
+      this.scriptProcessor.connect(this.gainNode);
+      
+      console.log('Live broadcast started');
+      return true;
+    } catch (error) {
+      console.error('Failed to start live broadcast:', error);
+      return false;
+    }
+  }
+
+  // Stop live audio broadcasting (host)
+  stopLiveBroadcast() {
+    this.isLiveBroadcasting = false;
+    
+    if (this.scriptProcessor) {
+      this.scriptProcessor.disconnect();
+      this.scriptProcessor = null;
+    }
+    
+    if (this.sourceAudioNode) {
+      this.sourceAudioNode.disconnect();
+      this.sourceAudioNode = null;
+    }
+    
+    if (this.mediaStream) {
+      this.mediaStream.getTracks().forEach(track => track.stop());
+      this.mediaStream = null;
+    }
+    
+    console.log('Live broadcast stopped');
+  }
+
+  // Play received audio chunk (client)
+  async playAudioChunk(audioData, timestamp, sampleRate) {
+    if (!this.audioContext) return;
+
+    try {
+      // Create audio buffer from received data
+      const audioBuffer = this.audioContext.createBuffer(1, audioData.length, sampleRate || 44100);
+      const channelData = audioBuffer.getChannelData(0);
+      
+      for (let i = 0; i < audioData.length; i++) {
+        channelData[i] = audioData[i];
+      }
+      
+      // Create source node and play immediately with minimal delay
+      const sourceNode = this.audioContext.createBufferSource();
+      sourceNode.buffer = audioBuffer;
+      sourceNode.connect(this.gainNode);
+      
+      // Calculate when to play (try to maintain real-time with small buffer)
+      const currentTime = this.audioContext.currentTime;
+      const playTime = Math.max(currentTime, this.nextPlayTime);
+      
+      sourceNode.start(playTime);
+      this.nextPlayTime = playTime + audioBuffer.duration;
+      
+      // Clean up after playback
+      sourceNode.onended = () => {
+        sourceNode.disconnect();
+      };
+      
+    } catch (error) {
+      console.error('Failed to play audio chunk:', error);
+    }
+  }
+
+  // Legacy file-based methods (keep for compatibility)
   async loadAudioFile(file) {
     try {
       const arrayBuffer = await file.arrayBuffer();
