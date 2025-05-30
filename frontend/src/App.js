@@ -549,8 +549,14 @@ function App() {
         break;
         
       case 'audio_chunk':
-        // Handle audio streaming (placeholder for future implementation)
-        console.log('Received audio chunk:', data.chunk_id);
+        if (mode === 'client') {
+          // Play received audio chunk in real-time
+          audioEngine.current.playAudioChunk(
+            data.audioData,
+            data.timestamp,
+            data.sampleRate
+          );
+        }
         break;
     }
   };
