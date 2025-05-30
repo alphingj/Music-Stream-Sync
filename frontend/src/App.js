@@ -1045,15 +1045,37 @@ function App() {
           {/* Sync Status */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-white/20">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-white mb-4">🎵 Synchronized Playback</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">
+                {isPlaying ? '🎙️ Live Audio Stream' : '🎵 Synchronized Playback'}
+              </h3>
               
               <div className="mb-6">
                 <div className="text-3xl text-white mb-2">
-                  {isPlaying ? '▶️' : '⏸️'}
+                  {isPlaying ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <span>🔊</span>
+                      <div className="flex space-x-1">
+                        <div className="w-1 h-8 bg-green-400 rounded animate-pulse"></div>
+                        <div className="w-1 h-6 bg-green-400 rounded animate-pulse" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-1 h-10 bg-green-400 rounded animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                        <div className="w-1 h-4 bg-green-400 rounded animate-pulse" style={{animationDelay: '0.3s'}}></div>
+                        <div className="w-1 h-7 bg-green-400 rounded animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                      </div>
+                    </div>
+                  ) : (
+                    '⏸️'
+                  )}
                 </div>
                 <div className="text-gray-300">
-                  {formatTime(currentTime)}
+                  {isPlaying ? 'Receiving live audio...' : formatTime(currentTime)}
                 </div>
+                
+                {isPlaying && (
+                  <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs bg-green-500/20 text-green-300">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                    LIVE
+                  </div>
+                )}
               </div>
 
               {/* Volume Control (Client Only) */}
