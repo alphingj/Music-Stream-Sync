@@ -903,42 +903,85 @@ function App() {
           {/* Audio Controls */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-white/20">
             <div className="text-center mb-6">
-              {audioFile && (
+              {broadcastMode === 'live' ? (
                 <div className="mb-4">
-                  <h3 className="text-xl font-semibold text-white mb-2">🎵 {audioFile.name}</h3>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    🎙️ Live Broadcasting
+                    {isLiveBroadcasting && (
+                      <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-300">
+                        <div className="w-2 h-2 bg-red-400 rounded-full mr-1 animate-pulse"></div>
+                        LIVE
+                      </span>
+                    )}
+                  </h3>
                   <div className="text-gray-300">
-                    {formatTime(currentTime)} / {formatTime(duration)}
+                    {isLiveBroadcasting ? 'Broadcasting your voice...' : 'Ready to broadcast'}
                   </div>
                 </div>
+              ) : (
+                audioFile && (
+                  <div className="mb-4">
+                    <h3 className="text-xl font-semibold text-white mb-2">🎵 {audioFile.name}</h3>
+                    <div className="text-gray-300">
+                      {formatTime(currentTime)} / {formatTime(duration)}
+                    </div>
+                  </div>
+                )
               )}
 
               <div className="flex justify-center items-center space-x-4 mb-6">
-                <button
-                  onClick={() => audioEngine.current.seek(Math.max(0, currentTime - 10))}
-                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                  disabled={!audioFile}
-                >
-                  <span className="text-white text-xl">⏪</span>
-                </button>
-                
-                <button
-                  onClick={togglePlayback}
-                  className="p-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105 disabled:opacity-50"
-                  disabled={!audioFile}
-                >
-                  <span className="text-white text-2xl">
-                    {isPlaying ? '⏸️' : '▶️'}
-                  </span>
-                </button>
-                
-                <button
-                  onClick={() => audioEngine.current.seek(Math.min(duration, currentTime + 10))}
-                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                  disabled={!audioFile}
-                >
-                  <span className="text-white text-xl">⏩</span>
-                </button>
+                {broadcastMode === 'live' ? (
+                  <button
+                    onClick={toggleLiveBroadcast}
+                    className={`p-4 rounded-full transition-all transform hover:scale-105 ${
+                      isLiveBroadcasting 
+                        ? 'bg-red-500 hover:bg-red-600' 
+                        : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+                    }`}
+                    disabled={connectionState !== 'connected'}
+                  >
+                    <span className="text-white text-2xl">
+                      {isLiveBroadcasting ? '🛑' : '🎙️'}
+                    </span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => audioEngine.current.seek(Math.max(0, currentTime - 10))}
+                      className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                      disabled={!audioFile}
+                    >
+                      <span className="text-white text-xl">⏪</span>
+                    </button>
+                    
+                    <button
+                      onClick={togglePlayback}
+                      className="p-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105 disabled:opacity-50"
+                      disabled={!audioFile}
+                    >
+                      <span className="text-white text-2xl">
+                        {isPlaying ? '⏸️' : '▶️'}
+                      </span>
+                    </button>
+                    
+                    <button
+                      onClick={() => audioEngine.current.seek(Math.min(duration, currentTime + 10))}
+                      className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                      disabled={!audioFile}
+                    >
+                      <span className="text-white text-xl">⏩</span>
+                    </button>
+                  </>
+                )}
               </div>
+
+              {broadcastMode === 'live' && connectionState !== 'connected' && (
+                <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-xl">
+                  <p className="text-yellow-300 text-sm">
+                    💡 Connect clients first to start live broadcasting
+                  </p>
+                </div>
+              )}
 
               {/* Volume Control */}
               <div className="flex items-center justify-center space-x-4">
