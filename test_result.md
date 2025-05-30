@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Build an Android music synchronization app that can operate in Host/Client modes with real-time audio synchronization over WiFi networks. The React version should demonstrate core concepts using WebRTC P2P and Web Audio API for sub-50ms sync accuracy."
+user_problem_statement: "Build an Android music synchronization app that can operate in Host/Client modes with real-time audio synchronization over WiFi networks. Enhanced with live audio broadcasting where host can stream live voice to connected clients in real-time."
 
 backend:
   - task: "WebSocket signaling server for WebRTC"
