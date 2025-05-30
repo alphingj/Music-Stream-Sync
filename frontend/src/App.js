@@ -373,6 +373,11 @@ function App() {
   const [volume, setVolume] = useState(0.8);
   const [connectedClients, setConnectedClients] = useState([]);
   const [availableSessions, setAvailableSessions] = useState([]);
+  
+  // Live audio broadcasting states
+  const [isLiveBroadcasting, setIsLiveBroadcasting] = useState(false);
+  const [hasMicrophoneAccess, setHasMicrophoneAccess] = useState(false);
+  const [broadcastMode, setBroadcastMode] = useState('file'); // 'file' or 'live'
 
   const audioEngine = useRef(new AudioSyncEngine());
   const p2pManager = useRef(null);
