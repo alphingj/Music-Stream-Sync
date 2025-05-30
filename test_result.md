@@ -107,27 +107,33 @@ user_problem_statement: "Build an Android music synchronization app that can ope
 backend:
   - task: "WebSocket signaling server for WebRTC"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented WebSocket endpoint for WebRTC signaling, session management, and P2P connection establishment. Includes offer/answer/ICE candidate relay and session broadcasting."
+      - working: false
+        agent: "testing"
+        comment: "WebSocket connection tests failed with 'timed out during opening handshake' error. The WebSocket endpoint code is correctly implemented in server.py, but there appears to be an issue with the WebSocket connection through the Kubernetes ingress. The WebSocket protocol may not be properly upgraded or allowed through the ingress configuration."
 
   - task: "Audio session management API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented REST API for creating/listing audio sessions, connection manager for WebSocket clients, and session state management."
+      - working: true
+        agent: "testing"
+        comment: "All REST API endpoints for session management are working correctly. Successfully tested: GET /api/ (health check), POST /api/sessions (create session), GET /api/sessions (list sessions), and GET /api/sessions/{session_id} (get specific session). The MongoDB integration is working properly for session storage and retrieval."
 
 frontend:
   - task: "Dual-mode UI (Host/Client selector)"
