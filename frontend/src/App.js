@@ -572,6 +572,56 @@ function App() {
     }
   };
 
+  const requestMicrophoneAccess = async () => {
+    const success = await audioEngine.current.requestMicrophoneAccess();
+    setHasMicrophoneAccess(success);
+    if (success) {
+      setBroadcastMode('live');
+    }
+    return success;
+  };
+
+  const startLiveBroadcast = async () => {
+    if (!hasMicrophoneAccess) {
+      const success = await requestMicrophoneAccess();
+      if (!success) {
+        alert('Microphone access is required for live broadcasting');
+        return;
+      }
+    }
+
+    const success = await audioEngine.current.startLiveBroadcast((audioChunk) => {
+      // Send audio chunk to all connected clients
+      if (p2pManager.current) {
+        p2pManager.current.sendData({
+          type: 'audio_chunk',
+          audioData: audioChunk.audioData,
+          timestamp: audioChunk.timestamp,
+          sampleRate: audioChunk.sampleRate
+        });
+      }
+    });
+
+    if (success) {
+      setIsLiveBroadcasting(true);
+      setIsPlaying(true);
+    }
+  };
+
+  const stopLiveBroadcast = () => {
+    audioEngine.current.stopLiveBroadcast();
+    setIsLiveBroadcasting(false);
+    setIsPlaying(false);
+  };
+
+  const toggleLiveBroadcast = () => {
+    if (isLiveBroadcasting) {
+      stopLiveBroadcast();
+    } else {
+      startLiveBroadcast();
+    }
+  };
+
   const createSession = () => {
     if (!sessionName.trim()) {
       alert('Please enter a session name');
