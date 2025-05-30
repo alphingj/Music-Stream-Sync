@@ -751,15 +751,61 @@ function App() {
             </div>
             
             <div>
-              <label className="text-white font-medium mb-2 block">Upload Audio File</label>
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={handleFileUpload}
-                className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-500 file:text-white file:font-medium"
-              />
-              {audioFile && (
-                <p className="text-green-300 text-sm mt-2">✓ {audioFile.name}</p>
+              <label className="text-white font-medium mb-4 block">Broadcasting Mode</label>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <button
+                  onClick={() => setBroadcastMode('live')}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    broadcastMode === 'live' 
+                      ? 'border-green-500 bg-green-500/20 text-green-300' 
+                      : 'border-white/30 bg-white/10 text-gray-300'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">🎙️</div>
+                  <div className="font-medium">Live Audio</div>
+                  <div className="text-sm opacity-75">Broadcast your voice</div>
+                </button>
+                
+                <button
+                  onClick={() => setBroadcastMode('file')}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    broadcastMode === 'file' 
+                      ? 'border-green-500 bg-green-500/20 text-green-300' 
+                      : 'border-white/30 bg-white/10 text-gray-300'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">🎵</div>
+                  <div className="font-medium">Audio File</div>
+                  <div className="text-sm opacity-75">Play uploaded music</div>
+                </button>
+              </div>
+              
+              {broadcastMode === 'live' && (
+                <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4">
+                  <div className="flex items-center space-x-2 text-blue-300 mb-2">
+                    <span className="text-lg">🎙️</span>
+                    <span className="font-medium">Live Broadcasting</span>
+                  </div>
+                  <p className="text-blue-200 text-sm">
+                    Your voice will be broadcast in real-time to all connected clients. 
+                    Microphone access will be requested when you start the session.
+                  </p>
+                </div>
+              )}
+              
+              {broadcastMode === 'file' && (
+                <div>
+                  <label className="text-white font-medium mb-2 block">Upload Audio File</label>
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleFileUpload}
+                    className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-500 file:text-white file:font-medium"
+                  />
+                  {audioFile && (
+                    <p className="text-green-300 text-sm mt-2">✓ {audioFile.name}</p>
+                  )}
+                </div>
               )}
             </div>
             
@@ -772,7 +818,7 @@ function App() {
               </button>
               <button
                 onClick={createSession}
-                disabled={!sessionName.trim() || !audioFile}
+                disabled={!sessionName.trim() || (broadcastMode === 'file' && !audioFile)}
                 className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-xl font-medium hover:from-green-600 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Create
